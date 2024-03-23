@@ -1,0 +1,44 @@
+services:
+  spring-boot:
+    image: imagem-spring-boot
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tcgob-api
+    restart: always
+    ports:
+      - 8089:8089
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/tcgob
+      - DATABASE_USERNAME=postgres
+      - DATABASE_PASSWORD=postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+
+  postgres:
+    image: postgres:latest
+    network_mode: bridge
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: tcgob
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  pgadmin:
+    image: dpage/pgadmin4
+    ports:
+      - "54321:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: magnomuriel@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: 123456
+    depends_on:
+        - postgres
